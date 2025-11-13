@@ -1,0 +1,6 @@
+[submodule "submodules/neural-subgraph-matcher-miner"]
+	path = submodules/neural-subgraph-matcher-miner
+	url = https://github.com/rejuve-bio/neural-subgraph-matcher-miner.git
+[submodule "submodules/custom-atomspace-builder"]
+	path = submodules/custom-atomspace-builder
+	url = https://github.com/rejuve-bio/custom-atomspace-builder.git
