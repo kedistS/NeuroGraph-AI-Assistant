@@ -1,6 +1,6 @@
 services:  
   integration-service:  
-    build:         
+    build:  
       context: ./integration_service  
       dockerfile: Dockerfile  
     container_name: neurograph-ai-assistant-integration-service  
@@ -34,6 +34,7 @@ services:
   
 volumes:  
   shared_output:  
+    external: true  
   csv_cache:  
   
 networks:  
