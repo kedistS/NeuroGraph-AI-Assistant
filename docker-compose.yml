@@ -18,6 +18,7 @@ services:
       - SHARED_VOLUME_PATH=${SHARED_VOLUME_PATH:-/shared/output}
     volumes:
       - shared_output:/shared/output
+      - ./integration_service/output:/app/output
       - csv_cache:/tmp/csv_cache
     networks:
       - custom-atomspace-builder_atomspace-network

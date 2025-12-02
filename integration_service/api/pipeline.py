@@ -34,25 +34,16 @@ async def execute_pipeline(
                 f.write(content)  
             csv_file_paths.append(file_path)  
           
-        # Generate NetworkX graph using AtomSpace Builder  
-        networkx_result = await orchestration_service._generate_networkx(  
-            csv_files=csv_file_paths,  
-            config=config,  
-            schema_json=schema_json,  
-            writer_type=writer_type,  
-            tenant_id="default"  
-        )  
+        # Generate NetworkX graph using AtomSpace Builder 
+        result = await orchestration_service.execute_mining_pipeline(
+            csv_files=csv_file_paths,
+            config=config,
+            schema_json=schema_json,
+            writer_type=writer_type,
+            tenant_id="default"
+        )
           
-        # Mine motifs using Neural Miner  
-        motifs = await orchestration_service._mine_motifs(  
-            networkx_result["networkx_file"]  
-        )  
-          
-        return {  
-            "job_id": networkx_result["job_id"],  
-            "motifs": motifs,  
-            "status": "success"  
-        }  
+        return result
           
     finally:  
         # Cleanup temporary directory  

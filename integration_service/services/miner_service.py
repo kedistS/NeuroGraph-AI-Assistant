@@ -12,12 +12,22 @@ class MinerService:
         self.miner_url = settings.miner_url  
         self.timeout = settings.miner_timeout  
       
-    async def mine_motifs(self, networkx_file_path: str, max_retries: int = 3) -> Dict[str, Any]:  
+    async def mine_motifs(
+        self, 
+        networkx_file_path: str, 
+        job_id: str = None, 
+        max_retries: int = 3
+    ) -> Dict[str, Any]:  
         """Send NetworkX file to miner and return discovered motifs."""  
         if not os.path.exists(networkx_file_path):  
             raise FileNotFoundError(f"NetworkX file not found: {networkx_file_path}")  
           
-        # Retry logic for network reliability  
+        if job_id is None:
+            path_parts = networkx_file_path.split('/')
+            if len(path_parts) >= 4 and path_parts[-3] == 'output':
+                job_id = path_parts[-2]
+        
+    
         for attempt in range(max_retries):  
             try:  
                 # Read NetworkX file  
@@ -26,8 +36,12 @@ class MinerService:
                   
                 # Send to miner using HTTP client  
                 async with httpx.AsyncClient(timeout=self.timeout) as client:  
-                    files = {'graph_file': ('graph.gpickle', networkx_data, 'application/octet-stream')}  
-                    response = await client.post(f"{self.miner_url}/mine", files=files)  
+                    files = {'graph_file': ('graph.gpickle', networkx_data, 'application/octet-stream')}
+                    data = {}
+                    if job_id:
+                        data['job_id'] = job_id
+                    
+                    response = await client.post(f"{self.miner_url}/mine", files=files, data=data)  
                       
                     if response.status_code != 200:  
                         raise RuntimeError(f"Miner returned {response.status_code}: {response.text}")  
@@ -48,11 +62,8 @@ class MinerService:
       
     def validate_motif_output(self, output: Dict[str, Any]) -> bool:  
         """Validate miner output structure."""  
-        required_keys = ['motifs', 'statistics']  
+        required_keys = ['results_path', 'plots_path', 'status']  
         if not all(key in output for key in required_keys):  
             return False  
-          
-        if not isinstance(output['motifs'], list):  
-            return False  
-              
+
         return True
