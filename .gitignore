@@ -1,0 +1,36 @@
+# Python  
+__pycache__/  
+*.py[cod]  
+*$py.class  
+*.so  
+.Python  
+env/  
+venv/  
+.env  
+  
+# IDE  
+.vscode/  
+.idea/  
+  
+# OS  
+.DS_Store  
+Thumbs.db  
+  
+# Logs  
+*.log  
+logs/  
+  
+# Cache  
+cache/  
+.csv_cache/  
+  
+# Docker  
+.dockerignore
+
+# Project Output Directories
+integration_service/output/
+submodules/neural-subgraph-matcher-miner/output/
+output/
+*.pkl
+*.gpickle
+networkx_metadata.json
