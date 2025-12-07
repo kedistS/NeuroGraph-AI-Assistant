@@ -3,25 +3,9 @@ import os
 import tempfile  
 from typing import List  
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException  
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException  
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
-from typing import Optional
 from ..services.orchestration_service import OrchestrationService  
 from ..config.settings import settings  
-
-class MiningConfig(BaseModel):
-    job_id: str
-    min_pattern_size: int = 5
-    max_pattern_size: int = 10
-    min_neighborhood_size: int = 5
-    max_neighborhood_size: int = 10
-    n_neighborhoods: int = 2000
-    n_trials: int = 100
-    graph_type: Optional[str] = None
-    search_strategy: str = "greedy"
-    sample_method: str = "tree"
-    graph_output_format: str = "representative"  
   
 router = APIRouter()  
 orchestration_service = OrchestrationService()  
@@ -70,19 +54,39 @@ async def generate_graph(
 
 @router.post("/mine-patterns")
 async def mine_patterns(
-    config: MiningConfig
+    job_id: str = Form(...),
+    min_pattern_size: int = Form(3),
+    max_pattern_size: int = Form(5),
+    min_neighborhood_size: int = Form(3),
+    max_neighborhood_size: int = Form(5),
+    n_neighborhoods: int = Form(500),
+    n_trials: int = Form(100),
+    graph_type: str = Form(None),
+    search_strategy: str = Form("greedy"),
+    sample_method: str = Form("tree"),
+    graph_output_format: str = Form("representative")
 ):
     """ Mine patterns from NetworkX graph with custom configuration."""
     
     # Auto-detect graph_type from metadata if not provided
-    if config.graph_type is None:
-        config.graph_type = await orchestration_service.get_graph_type_from_metadata(config.job_id)
+    if graph_type is None:
+        graph_type = await orchestration_service.get_graph_type_from_metadata(job_id)
     
-    mining_config = config.dict()
-    print(f"DEBUG PIPELINE: Received config: {mining_config}", flush=True)
+    mining_config = {
+        'min_pattern_size': min_pattern_size,
+        'max_pattern_size': max_pattern_size,
+        'min_neighborhood_size': min_neighborhood_size,
+        'max_neighborhood_size': max_neighborhood_size,
+        'n_neighborhoods': n_neighborhoods,
+        'n_trials': n_trials,
+        'graph_type': graph_type,
+        'search_strategy': search_strategy,
+        'sample_method': sample_method,
+        'graph_output_format': graph_output_format
+    }
     
     result = await orchestration_service.mine_patterns(
-        job_id=config.job_id,
+        job_id=job_id,
         mining_config=mining_config
     )
     
