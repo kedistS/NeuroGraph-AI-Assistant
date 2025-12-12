@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # --- Custom Atomspace Builder Services ---
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: neo4j-atomspace
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    environment:
+      - NEO4J_AUTH=${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-password}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_dbms_security_allow__csv__import__from__file__urls=true
+      - NEO4J_dbms_directories_import=/var/lib/neo4j/import
+      - NEO4J_dbms_memory_heap_initial__size=${NEO4J_HEAP_INITIAL:-512m}
+      - NEO4J_dbms_memory_heap_max__size=${NEO4J_HEAP_MAX:-2G}
+      - NEO4J_dbms_memory_pagecache_size=${NEO4J_PAGECACHE:-1G}
+      - NEO4J_server_config_strict__validation_enabled=false
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - ./shared_output:/var/lib/neo4j/import/shared/output # Unified bind mount logic
+      - neo4j_plugins:/plugins
+    networks:
+      - neurograph-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "${NEO4J_USERNAME:-neo4j}", "-p", "${NEO4J_PASSWORD:-password}", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  hugegraph:
+    image: hugegraph/hugegraph:1.5.0
+    container_name: hugegraph-atomspace
+    ports:
+      - "${HUGEGRAPH_REST_PORT:-8080}:8080"
+      - "${HUGEGRAPH_GREMLIN_PORT:-8182}:8182"
+    environment:
+      - HUGEGRAPH_CONF=/hugegraph/conf
+    volumes:
+      - hugegraph_data:/hugegraph/data
+      - hugegraph_logs:/hugegraph/logs
+    networks:
+      - neurograph-network
+    restart: unless-stopped
+
+  atomspace-api-dev:
+    build:
+      context: ./submodules/custom-atomspace-builder
+      dockerfile: Dockerfile
+    container_name: atomspace-api
+    ports:
+      - "${ATOMSPACE_PORT:-8000}:8000"
+    environment:
+      - API_PORT=8000
+      - NEO4J_HOST=neo4j
+      - NEO4J_PORT=7687
+      - NEO4J_HTTP_PORT=7474
+      - NEO4J_BOLT_PORT=7687
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - NEO4J_USERNAME=${NEO4J_USERNAME:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+      - NEO4J_DATABASE=${NEO4J_DATABASE:-neo4j}
+      - HUGEGRAPH_HOST=hugegraph
+      - HUGEGRAPH_PORT=${HUGEGRAPH_PORT:-8080}
+      - HUGEGRAPH_GRAPH=${HUGEGRAPH_GRAPH:-hugegraph}
+      - ANNOTATION_SERVICE_URL=${ANNOTATION_SERVICE_URL:-}
+      - ANNOTATION_SERVICE_TIMEOUT=${ANNOTATION_SERVICE_TIMEOUT:-300.0}
+    volumes:
+      # CONFIG INJECTION: Mount the root config file to override the internal one
+      - ./atomspace-config.yaml:/app/config.yaml
+      - ./shared_output:/shared/output # Unified bind mount
+      - atomspace_logs:/app/logs
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      hugegraph:
+        condition: service_started
+    networks:
+      - neurograph-network
+    restart: always
+
+  # --- Neural Subgraph Matcher Miner ---
+  neural-miner:
+    build: 
+      context: ./submodules/neural-subgraph-matcher-miner
+      dockerfile: Dockerfile
+    container_name: neurograph-ai-assistant-neural-miner
+    volumes:
+      - ./shared_output:/shared/output # Unified bind mount
+    networks:
+      - neurograph-network
+    restart: always
+
+  # --- Integration Service ---
+  integration-service:
+    build:
+      context: ./integration_service
+      dockerfile: Dockerfile
+    container_name: neurograph-ai-assistant-integration-service
+    ports:
+      - "${INTEGRATION_API_PORT:-9000}:9000"
+    environment:
+      - API_PORT=9000
+      - ATOMSPACE_API_URL=http://atomspace-api-dev:8000
+      - NEURAL_MINER_URL=http://neural-miner:5000
+      - ANNOTATION_SERVICE_URL=${ANNOTATION_SERVICE_URL:-}
+      - ATOMSPACE_TIMEOUT=${ATOMSPACE_TIMEOUT:-600}
+      - MINER_TIMEOUT=${MINER_TIMEOUT:-1800}
+      - ANNOTATION_TIMEOUT=${ANNOTATION_TIMEOUT:-300}
+      - CSV_CACHE_DIR=${CSV_CACHE_DIR:-./cache}
+      - SHARED_VOLUME_PATH=/shared/output
+    volumes:
+      - ./shared_output:/shared/output # Unified bind mount
+      - ./integration_service/output:/app/output # Local output for integration service
+      - csv_cache:/tmp/csv_cache
+    networks:
+      - neurograph-network
+    restart: always
+    depends_on:
+      - atomspace-api-dev
+      - neural-miner
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_plugins:
+  hugegraph_data:
+  hugegraph_logs:
+  atomspace_logs:
+  csv_cache:
+
+networks:
+  neurograph-network:
+    driver: bridge
