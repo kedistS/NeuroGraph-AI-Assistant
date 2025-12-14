@@ -12,11 +12,11 @@ services:
     environment:
       # Internal URLs for SSR (Server-to-Server)
       - ANNOTATION_URL=http://annotation-backend:8000
-      - LOADER_URL=http://integration-service:9000
-      - INTEGRATION_URL=http://integration-service:9000
+      - LOADER_URL=http://atomspace-api-dev:8000
+      - INTEGRATION_URL=http://neurograph-ai-assistant-integration-service:9000
       # Public URLs for the Browser (Client-to-Server)
       - PUBLIC_ANNOTATION_URL=http://localhost:8001
-      - PUBLIC_LOADER_URL=http://localhost:9000
+      - PUBLIC_LOADER_URL=http://localhost:8000
       - PUBLIC_INTEGRATION_URL=http://localhost:9000
     depends_on:
       - annotation-backend
@@ -163,6 +163,9 @@ services:
       - APP_PORT=8000
       - MONGO_URI=mongodb://mongodb:27017/annotation_db
       - REDIS_URL=redis://redis:6379/0
+      - LLM_MODEL=${LLM_MODEL:-openai}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     depends_on:
       - mongodb
       - redis

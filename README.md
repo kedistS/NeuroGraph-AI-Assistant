@@ -41,65 +41,46 @@ cd NeuroGraph-AI-Assistant
 git submodule update --init --recursive
 ```
 
-### 2. Configuration (`.env`)
+2. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and set your Neo4j password (optional, defaults work fine):
+   ```bash
+   NEO4J_PASSWORD=your_secure_password
+   ```
 
-The project uses a root-level `.env` file to configure the services.
+3. **Start the entire stack (Backend + Frontend + Databases):**
+   ```bash
+   docker-compose up --build
+   ```
+   
+   *Note: The first build may take 5-10 minutes as it compiles all services.*
 
-1.  Copy the example environment file:
-    ```bash
-    cp .env.example .env
-    ```
+4. **Access the application:**
+   - **Frontend Dashboard**: [http://localhost:3000](http://localhost:3000)
+   - **Integration API**: [http://localhost:9000/docs](http://localhost:9000/docs)
+   - **Neo4j Browser**: [http://localhost:7474](http://localhost:7474)
 
-2.  Edit `.env` and configure the necessary variables:
-    ```bash
+### Alternative: Local Frontend Development
 
-    # Service Ports (defaults)
-    INTEGRATION_PORT=9000
-    ANNOTATION_GUI_PORT=3000
-    ANNOTATION_API_PORT=8001
-    ATOMSPACE_PORT=8000
-    
-    # Neo4j Settings
-    NEO4J_PASSWORD=change_to_your_own_password
-    ```
+If you want to develop the frontend locally (with hot-reload) while keeping the backend in Docker:
 
-### 3. Frontend Configuration
+1. **Start only the backend services:**
+   ```bash
+   docker-compose up neo4j hugegraph atomspace-api-dev neural-miner integration-service annotation-backend mongodb redis
+   ```
 
-The Annotation Tool (frontend) requires its own environment configuration to talk to the backend services.
-
-1.  Navigate to the annotation tool directory:
-    ```bash
-    cd submodules/annotation-tool
-    ```
-
-2.  Create the `.env` file:
-    ```bash
-    cp .env.example .env
-    ```
-
-3.  Ensure the URLs match your Docker service ports (usually default is fine):
-    ```env
-    API_URL=http://localhost:8000
-    INTEGRATION_URL=http://localhost:9000
-    ANNOTATION_URL=http://localhost:8001
-    ```
-
-### 4. Build and Run
-
-Return to the root directory and start the entire system using Docker Compose.
-
-```bash
-cd ../..  # Go back to root
-docker-compose up --build -d
-```
-frontend
-```bash
-cd submodules/annotation-tool
-npm install
-npm run dev
-```
-
-*Note: The first build may take some time as it compiles the frontend and builds the backend images.*
+2. **Run the frontend locally:**
+   ```bash
+   cd submodules/annotation-tool
+   cp .env.example .env  # Only needed first time
+   npm install
+   npm run dev
+   ```
+   
+   The frontend will be available at [http://localhost:5173](http://localhost:5173) (Vite dev server).
 
 ## Usage
 
@@ -154,13 +135,3 @@ docker-compose restart integration-service
 # Rebuild a specific service
 docker-compose up -d --build --no-deps annotation-frontend
 ```
-
-## detailed System Flow
-
-![System Flow Diagram](./docs/system_flow.png)
-
-*(Note: Ensure you have the `docs/system_flow.png` file or update this path to your actual diagram)*
-
-## License
-
-[MIT License](LICENSE)
