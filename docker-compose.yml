@@ -207,6 +207,8 @@ services:
       - ./custom-atomspace-builder/output:/shared/output
     networks:
       - atomspace-network
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     restart: always
 
 volumes:
