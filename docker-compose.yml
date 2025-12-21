@@ -90,7 +90,7 @@ services:
   # --- Annotation Service (Backend) ---
   annotation_service:
     image: tarikua123/annotation-service
-    container_name: annotation_service
+    container_name: annotation-service
     ports:
       - "${ANNOTATION_SERVICE_PORT:-5800}:${APP_PORT:-5800}"
     command: python run.py
@@ -146,7 +146,6 @@ services:
   # --- Annotation Tool (Frontend) ---
   annotation-tool:
     image: tarikua123/annotation-tool
-    build: ./submodules/annotation-tool
     container_name: annotation-tool
     ports:
       - "${ANNOTATION_TOOL_PORT:-3000}:${ANNOTATION_TOOL_PORT:-3000}"

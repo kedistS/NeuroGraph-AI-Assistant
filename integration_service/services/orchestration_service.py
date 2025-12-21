@@ -275,6 +275,7 @@ class OrchestrationService:
         if os.path.exists(shared_plots):
             if os.path.exists(local_plots):
                 shutil.rmtree(local_plots)
+            # Use copytree for recursive copy of plot subdirectories
             shutil.copytree(shared_plots, local_plots)
         
         return {
@@ -304,14 +305,22 @@ class OrchestrationService:
         raise FileNotFoundError(f"File not found: {filename} in job {job_id}")
 
     def create_job_archive(self, job_id: str) -> str:
-        """
+        """ 
         Create a zip archive of the entire job directory.
         """
-        job_dir = os.path.join(self.local_output_dir, job_id)
-        if not os.path.exists(job_dir):
-            # Fallback to shared output
-            job_dir = os.path.join("/shared/output", job_id)
-            
+        local_job_dir = os.path.join(self.local_output_dir, job_id)
+        shared_job_dir = os.path.join("/shared/output", job_id)
+        
+        # Determine which directory to use
+        # If local exists but is missing results, prefer shared
+        job_dir = local_job_dir
+        if not os.path.exists(local_job_dir) or not os.path.exists(os.path.join(local_job_dir, "results")):
+            if os.path.exists(shared_job_dir):
+                job_dir = shared_job_dir
+            else:
+                # If shared also doesn't exist, we use local_job_dir for the error reporting
+                job_dir = local_job_dir
+
         if not os.path.exists(job_dir):
             raise FileNotFoundError(f"Job directory not found in local or shared output: {job_id}")
         
