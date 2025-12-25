@@ -32,15 +32,7 @@ class OrchestrationService:
         """Generate NetworkX graph from CSV files, with auxiliary Mork generation in background."""
         import asyncio
         
-        mork_task = asyncio.create_task(
-            self._generate_auxiliary_mork(
-                csv_files,
-                config,
-                schema_json,
-                graph_type,
-                tenant_id
-            )
-        )
+
         
         try:
             with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as config_file:  
@@ -53,6 +45,7 @@ class OrchestrationService:
                 
             try:
                 # Main NetworkX generation
+                print("DEBUG: Starting Main NetworkX generation...")
                 async with httpx.AsyncClient(timeout=self.timeout) as client:
                     files = []
                     for csv_file_path in csv_files:
@@ -77,13 +70,28 @@ class OrchestrationService:
                         file_obj.close()
                         
                     if response.status_code != 200:
+                        print(f"DEBUG: AtomSpace API failed. Status: {response.status_code}, Body: {response.text}")
                         raise RuntimeError(f"AtomSpace returned {response.status_code}: {response.text}")
                         
                     result = response.json()
+                    print(f"DEBUG: AtomSpace API success. Response: {result}")
                     nx_job_id = result['job_id']
+                    
+                    # Start Mork generation sequentially AFTER NetworkX is done
+                    print(f"DEBUG: Starting sequential Mork generation for job {nx_job_id}")
+                    mork_task = asyncio.create_task(
+                        self._generate_auxiliary_mork(
+                            csv_files,
+                            config,
+                            schema_json,
+                            graph_type,
+                            tenant_id
+                        )
+                    )
                     
                     # Now that we have the nx_job_id, we can start the merge task
                     # and clean up when both are done.
+                    print("DEBUG: Creating merge task")
                     asyncio.create_task(self._merge_mork_results(nx_job_id, mork_task, cleanup_dir))
                     
                 networkx_file = f"/shared/output/{nx_job_id}/networkx_graph.pkl"
@@ -184,7 +192,7 @@ class OrchestrationService:
                 if os.path.isfile(src_path):
                     shutil.copy2(src_path, dst_path)
             
-            shutil.rmtree(mork_dir)
+            # shutil.rmtree(mork_dir)
             print(f"Successfully merged Mork files from {mork_job_id} to {mork_subdir}")
             
         except Exception as e:
