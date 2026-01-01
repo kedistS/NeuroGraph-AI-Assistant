@@ -8,14 +8,14 @@ The system is composed of:
 
 *   **Integration Service**: The central orchestrator that manages workflows, streams data between services, and provides a unified REST API for the frontend.
 *   **Custom AtomSpace Builder**: A powerful graph processing engine that ingests CSV/JSON data and transforms it into NetworkX graphs, MeTTa formats, or Neo4j databases.
-*   **Neural Subgraph Miner**: A specialized mining engine that uses neural search strategies (Greedy, MCTS) to discover frequent patterns and motifs within the generated graphs.
+*   **Neural Subgraph Miner**: A specialized mining engine that uses neural search strategies (Greedy, MCTS) to discover frequent patterns and motifs within the generated graphs and get LLM-powered interpretation of the motifs.
 *   **Annotation Tool (Frontend)**: A modern, interactive React/Remix web interface for uploading data, visualizing Knowledge Graphs (KG), running mining jobs, and exploring results.
 *   **Annotation Query Backend**: A supporting backend service that handles graph queries and history management for the visualization tool.
 
 ## Features
 
 ### Core Capabilities
-*   **End-to-End Pipeline**: A seamless workflow from raw CSV upload to visualized graph patterns,getting their insights.
+*   **End-to-End Pipeline**: A seamless workflow from raw CSV upload to visualized graph patterns and getting LLM-powered interpretation.
 *   **Neural Mining**: Advanced subgraph mining using neural networks to guide the search for significant motifs.
 *   **Interactive Visualization**: Explore your Knowledge Graph (KG) with an interactive, node-link diagram interface.
 *   **Multi-Format Support**: Generate outputs in NetworkX, MeTTa, and Neo4j formats.
@@ -25,7 +25,7 @@ The system is composed of:
 *   **Data Import**: Easy-to-use drag-and-drop interface for uploading CSV nodes and edges.
 *   **Graph Exploration**: Visualizers for graph schema, top entities, and connectivity stats.
 *   **Mining Configuration**: Fine-grained control over mining parameters (Pattern Size, Search Strategy, Sampling Method).
-*   **Results Dashboard**: Downloadable reports and visualized mining outcomes.
+*   **Results Dashboard**: Downloadable reports, visualized mining outcomes and integrated chatbot to get interepretation of the plot results .
 
 ## Installation & Setup
 
