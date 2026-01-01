@@ -116,6 +116,7 @@ services:
     networks:
       - atomspace-network
     volumes:
+      - ./submodules/annotation-query-backend-general:/app
       - ./custom-atomspace-builder/output:/shared/output
 
   # --- MongoDB (For Annotation) ---
@@ -144,7 +145,7 @@ services:
 
   # --- Annotation Tool (Frontend) ---
   annotation-tool:
-    image: tarikua123/annoation-front
+    image: samribahta/annotation-front
     container_name: annotation-tool
     ports:
       - "${ANNOTATION_TOOL_PORT:-3000}:${ANNOTATION_TOOL_PORT:-3000}"
@@ -165,6 +166,7 @@ services:
     ports:
       - "8231:8231"
     volumes:
+      - ./MORK:/app # local code bind mount
       - ./custom-atomspace-builder/output:/shared/output # shared volume
     networks:
       - atomspace-network
@@ -202,9 +204,8 @@ services:
     image:  tarikua123/neural-revert:latest
     container_name: neurograph-ai-assistant-neural-miner
     volumes:
+      - ./submodules/neural-subgraph-matcher-miner:/app
       - ./custom-atomspace-builder/output:/shared/output
-      - ./submodules/neural-subgraph-matcher-miner/results:/app/results
-      - ./submodules/neural-subgraph-matcher-miner/plots:/app/plots
     ports:
       - "9002:9002"
     networks:
