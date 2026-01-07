@@ -19,6 +19,7 @@ async def generate_graph(
     graph_type: str = Form("directed")
 ):  
     """Generate NetworkX graph from CSV files."""  
+    print(f"DEBUG: Received generate-graph request with files: {[f.filename for f in files]}")
     # Validate all files are CSV  
     for file in files:  
         if not file.filename.endswith('.csv'):  
@@ -42,15 +43,19 @@ async def generate_graph(
             schema_json=schema_json,
             writer_type=writer_type,
             graph_type=graph_type,
-            tenant_id="default"
+            tenant_id="default",
+            cleanup_dir=temp_dir
         )
+        print(f"DEBUG: generate_networkx completed. Result: {result}")
           
         return result
           
-    finally:  
-        import shutil  
-        if os.path.exists(temp_dir):  
+    except Exception as e:
+        print(f"DEBUG: Error in generate-graph endpoint: {e}")
+        import shutil
+        if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
+        raise e
 
 @router.post("/mine-patterns")
 async def mine_patterns(

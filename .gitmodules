@@ -1,12 +1,23 @@
 [submodule "submodules/neural-subgraph-matcher-miner"]
 	path = submodules/neural-subgraph-matcher-miner
-	url = https://github.com/rejuve-bio/neural-subgraph-matcher-miner.git
+	url = https://github.com/tarikuamisganaw/neural-subgraph-matcher-miner.git
+	branch = finalized-interpreter-with-pipleine-integration
+
 [submodule "submodules/custom-atomspace-builder"]
 	path = submodules/custom-atomspace-builder
 	url = https://github.com/rejuve-bio/custom-atomspace-builder.git
+
 [submodule "submodules/annotation-tool"]
 	path = submodules/annotation-tool
-	url = https://github.com/rejuve-bio/annotation-tool.git
+	url = https://github.com/tarikuamisganaw/annotation-tool.git
+	branch = fixed-networkx-mork-complex
+
 [submodule "submodules/annotation-query-backend-general"]
 	path = submodules/annotation-query-backend-general
-	url = https://github.com/rejuve-bio/annotation-query-backend-general.git
+	url = https://github.com/tarikuamisganaw/annotation-query-backend.git
+	branch = fixed-networkx-mork-complex
+
+[submodule "submodules/MORK"]
+	path = submodules/MORK
+	url = https://github.com/DeazStar/MORK.git
+	branch = server
