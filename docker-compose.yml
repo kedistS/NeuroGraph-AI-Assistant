@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # --- Atomspace API ---
   atomspace-api:
-    image: tarikua123/space
+    image: kedist/atomspace-api:latest
     container_name: atomspace-api
     ports:
       - "${ATOMSPACE_API_PORT:-8001}:${API_PORT:-8001}"
@@ -89,7 +89,7 @@ services:
 
   # --- Annotation Service (Backend) ---
   annotation_service:
-    image: tarikua123/annotation-service
+    image: kedist/annotation-service:latest
     container_name: annotation-service
     ports:
       - "${ANNOTATION_SERVICE_PORT:-5800}:${APP_PORT:-5800}"
@@ -144,7 +144,7 @@ services:
 
   # --- Annotation Tool (Frontend) ---
   annotation-tool:
-    image: tarikua123/annoation-front
+    image: kedist/annotation-tool:latest
     container_name: annotation-tool
     ports:
       - "${ANNOTATION_TOOL_PORT:-3000}:${ANNOTATION_TOOL_PORT:-3000}"
@@ -199,7 +199,7 @@ services:
 
   # --- Neural Subgraph Matcher Miner ---
   neural-miner:
-    image:  tarikua123/neural-revert:latest
+    image:  kedist/neural-miner:latest
     container_name: neurograph-ai-assistant-neural-miner
     volumes:
       - ./custom-atomspace-builder/output:/shared/output
